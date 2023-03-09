@@ -1,18 +1,17 @@
 """"含有游戏设置类的模块"""
 import pygame
-class Settings():
+class Settings:
     """存储游戏所有设置的类。"""
     
     def __init__(self):
         """初始化游戏设置"""
         # 场景设置。
         self.screen_width = 1290
-        self.screen_height = 660
-        self.bg_color = (0, 0, 0)
+        self.sceen_height = 660
 
         # 飞船设置。
         self.ship_speed_factor = 1.5
-        self.ship_limit = 3
+        self.ship_limit = 0
 
         # 子弹设置。
         self.bullet_speed_factor = 5

@@ -28,7 +28,8 @@ class Scoreboard():
         """将分数转换为渲染图像。"""
         rounded_score = int(round(self.stats.score, -1))
         score_str = "{:,}".format(rounded_score)
-        self.score_image = self.font.render("Score:" + score_str, True, self.text_color)
+        self.score_image = self.font.render("Score:" + score_str, True,
+                self.text_color)
             
         # 在屏幕的右上方显示分数。
         self.score_rect = self.score_image.get_rect()

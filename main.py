@@ -1,7 +1,5 @@
 import os
 import sys
-import tkinter as tk
-import tkinter.ttk as ttk
 from time import sleep
 import threading
 import random as rd
@@ -20,7 +18,7 @@ from game_stats import GameStats
 from scoreboard import Scoreboard
 from button import Button
 from ship import Ship
-from protecting_cover import ProtectingCover
+from images_classes import ProtectingCover, GameOverStr
 
 class SpaceInvaders(object):
     """管理资产和行为的游戏整体类"""
@@ -60,6 +58,7 @@ class SpaceInvaders(object):
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
         self.meteorolites = pygame.sprite.Group()
+        self.gameover = GameOverStr(self.settings, self.screen, self.ship)
         
         # 创建的外星人
         self._create_fleet()
@@ -77,8 +76,9 @@ class SpaceInvaders(object):
                 self._add_meteorolites()
                 self._update_cover()
             
-            self._update_screen()
-            self.计时器.tick(130) 
+            self._update_screen(False)
+            self.计时器.tick(130)
+
 
     def _exit(self):
         """退出游戏"""
@@ -86,8 +86,8 @@ class SpaceInvaders(object):
         sl = win32api.MessageBox(0, "确定退出游戏吗？", "退出确认", win32con.MB_OKCANCEL)
         if  sl == 1:
             with open("high_score.txt","w") as scf:
-            scf.write(str(self.sb.high_score))
-            sys.exit()
+                scf.write(str(self.sb.high_score))
+                sys.exit()
         else:
             pygame.mouse.set_visible(False)
 
@@ -225,10 +225,13 @@ class SpaceInvaders(object):
         button_clicked = self.help_button.rect.collidepoint(mouse_x, mouse_y)
         if button_clicked and not self.game_active:
             help_text =  "太空入侵者玩法说明：\n"
-            help_text += "1.游戏目标: 躲避或防御陨石,在外星人达到屏幕低端或撞上飞船之前杀掉所以外星人\n"
-            help_text += "2.操作方法: 按左右方向键控制飞船移动,按空格键发射子弹,按下Ctrl键防御,"
+            help_text += "1.游戏目标: 躲避或防御陨石," \
+                         "在外星人达到屏幕低端或撞上飞船之前杀掉所以外星人\n"
+            help_text += "2.操作方法: 按左右方向键控制飞船移动,按空格键发射子弹," \
+                         "按下Ctrl键防御,"
             help_text += "松开Ctrl键停止防御\n"
-            help_text += "3.游戏细节: 防御状态无法发射子弹,红色外星人点数最多,其次橙色外星人"
+            help_text += "3.游戏细节: 防御状态无法发射子弹," \
+                         "红色外星人点数最多,其次橙色外星人"
             help_text += ",再次紫色外星人,最后蓝色外星人\n"
             sl = win32api.MessageBox(0, help_text, "太空入侵者--help", 
                 win32con.MB_OK)
@@ -243,7 +246,12 @@ class SpaceInvaders(object):
                 self.bullets.add(new_bullet)
                 self.settings.bulletsound.play()
 
-    def _update_screen(self):
+
+    def _draw_button(self):
+        """画出两个按钮"""
+        self.help_button.draw_button()
+        self.play_button.draw_button()
+    def _update_screen(self, gameoveris):
         """在屏幕上更新图像,绘制到新屏幕"""
         # 通过循环每个重绘屏幕
         
@@ -257,12 +265,12 @@ class SpaceInvaders(object):
         
         # 绘制得分信息
         self.sb.show_score()
+        self.gameover.draw()
         
         # 如果游戏处于非活动状态,则绘制Play按钮.
-        if not self.game_active:
-            self.play_button.draw_button()
+        if not self.game_active and not gameoveris:
             self.help_button.draw_button()
-
+            self.play_button.draw_button()
         # 使最近绘制的屏幕可见.
         pygame.display.flip()
     def _update_bullets(self):
@@ -327,7 +335,11 @@ class SpaceInvaders(object):
             sleep(0.5)
             self.settings.gameoversound1.play()
             self.settings.gameoversound2.play()
+            self.gameover.show()
+            self._update_screen(True)
             sleep(2)
+            self.gameover.hidden()
+
         self.aliens.empty()
         self.bullets.empty()
         self.meteorolites.empty()
